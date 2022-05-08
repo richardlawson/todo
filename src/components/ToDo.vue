@@ -1,0 +1,120 @@
+<template>
+  <form @submit.prevent="addNewTask" class="flex mb-6">
+    <label for="task" class="sr-only">Add Task</label>
+    <input v-model="newTask" name="task" id="task" placeholder="Enter a new task ..." class="grow text-2xl border-indigo-100 appearance-none border rounded-l py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+    <input type="submit" value="Add" class="flex-none bg-indigo-600 text-white font-bold py-2 px-4 rounded-r hover:bg-indigo-800">
+  </form>
+  <h2 class="mb-4">Pending</h2>
+  <div v-if="items.length">
+    <draggable
+        :list="items"
+        :disabled="!enabled"
+        item-key="task"
+        class="list-group"
+        ghost-class="ghost"
+        @start="dragging = true"
+        @end="reorder"
+    >
+      <template #item="{ element }">
+        <div class="list-group-item flex" :class="{ 'not-draggable': !enabled }">
+          <div class="no-flex">
+            <input type="checkbox" @click="completeTask(element)" class="mr-2">
+          </div>
+          <div class="grow cursor-pointer">{{ element.task }}</div>
+          <div class="no-flex text-gray-300 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+            </svg>
+          </div>
+        </div>
+      </template>
+    </draggable>
+  </div>
+  <div v-else>
+    <p>You don't have any tasks in your list yet</p>
+  </div>
+  <div v-if="completedItems.length" class="mt-6">
+    <h2 class="mb-4">Completed</h2>
+    <div>
+      <div v-for="item in completedItems" :key="item.id" class="list-group-item flex">
+        <div class="grow line-through">{{ item.task }}</div>
+        <div class="no-flex text-gray-400 hover:text-gray-700" @click="deleteComplete(item)">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import draggable from "vuedraggable";
+
+export default {
+  components: {
+    draggable,
+  },
+  data() {
+    return {
+      enabled: true,
+      dragging: false,
+      items: [],
+      completedItems: [],
+      newTask: ''
+    }
+  },
+  mounted() {
+   this.loadLists()
+  },
+  methods: {
+    loadLists() {
+      this.items = JSON.parse(localStorage.getItem('pendingTasks'));
+      this.completedItems = JSON.parse(localStorage.getItem('completedTasks'));
+    },
+    storeLists() {
+      localStorage.setItem('pendingTasks', JSON.stringify(this.items));
+      localStorage.setItem('completedTasks', JSON.stringify(this.completedItems));
+    },
+    completeTask(item) {
+      this.completedItems.unshift(item)
+      this.items = this.items.filter(({id}) => id !== item.id)
+      this.storeLists()
+    },
+    addNewTask() {
+      if (!this.isValidTask(this.newTask)) {
+        return
+      }
+
+      this.items.unshift({
+        id: this.items.length,
+        task: this.newTask,
+      })
+      this.newTask = ''
+      this.storeLists()
+    },
+    isValidTask(task) {
+      return (task.trim() !== '')
+    },
+    reorder() {
+      this.dragging = false
+      this.storeLists()
+    },
+    deleteComplete(item) {
+      this.dragging = false
+      this.completedItems = this.completedItems.filter(({id}) => id !== item.id)
+      this.storeLists()
+    }
+  },
+}
+
+</script>
+
+<style scoped>
+
+.ghost {
+  opacity: 0.5;
+  background: #c8ebfb;
+}
+
+</style>
