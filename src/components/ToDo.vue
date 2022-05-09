@@ -1,8 +1,8 @@
 <template>
-  <form @submit.prevent="addNewTask" class="flex mb-6">
+  <form @submit.prevent="addNewTask" class="flex mb-6" :class="{ 'apply-shake': shake }">
     <label for="task" class="sr-only">Add Task</label>
-    <input v-model="newTask" name="task" id="task" placeholder="Enter a new task ..." class="grow text-2xl border-indigo-100 appearance-none border rounded-l py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-    <input type="submit" value="Add" class="flex-none bg-indigo-600 text-white font-bold py-2 px-4 rounded-r hover:bg-indigo-800">
+    <input v-model="newTask" name="task" id="task" placeholder="Enter a new task ..." class="grow text-2xl border-indigo-100 appearance-none border rounded-l py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-indigo-300">
+    <input type="submit" value="Add" class="flex-none bg-gray-600 text-white font-bold py-2 px-4 rounded-r hover:bg-gray-800">
   </form>
   <h2 class="mb-4">Pending</h2>
   <div v-if="items.length">
@@ -18,7 +18,8 @@
       <template #item="{ element }">
         <div class="list-group-item flex" :class="{ 'not-draggable': !enabled }">
           <div class="no-flex">
-            <input type="checkbox" @click="completeTask(element)" class="mr-2">
+            <label :for="`complete-${element.id}`" class="sr-only">Complete Task</label>
+            <input type="checkbox" @click="completeTask(element)" :id="`complete-${element.id}`" class="mr-2" title="Complete item">
           </div>
           <div class="grow cursor-pointer">{{ element.task }}</div>
           <div class="no-flex text-gray-300 cursor-pointer">
@@ -38,10 +39,12 @@
     <div>
       <div v-for="item in completedItems" :key="item.id" class="list-group-item flex">
         <div class="grow line-through">{{ item.task }}</div>
-        <div class="no-flex text-gray-400 hover:text-gray-700" @click="deleteComplete(item)">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
+        <div class="no-flex text-gray-700 hover:text-gray-800">
+          <a @click.prevent="deleteComplete(item)" href="#" aria-label="Delete task" title="Delete item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </a>
         </div>
       </div>
     </div>
@@ -59,6 +62,7 @@ export default {
     return {
       enabled: true,
       dragging: false,
+      shake: false,
       items: [],
       completedItems: [],
       newTask: ''
@@ -83,6 +87,7 @@ export default {
     },
     addNewTask() {
       if (!this.isValidTask(this.newTask)) {
+        this.shakeAnimation()
         return
       }
 
@@ -104,7 +109,14 @@ export default {
       this.dragging = false
       this.completedItems = this.completedItems.filter(({id}) => id !== item.id)
       this.storeLists()
-    }
+    },
+    shakeAnimation() {
+      this.shake = true;
+
+      setTimeout(() => {
+        this.shake = false;
+      }, 820); // timeout value depending on the duration of the animation
+    },
   },
 }
 
@@ -115,6 +127,33 @@ export default {
 .ghost {
   opacity: 0.5;
   background: #c8ebfb;
+}
+
+@keyframes shake {
+  10%,
+  90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+
+  20%,
+  80% {
+    transform: translate3d(2px, 0, 0);
+  }
+
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+
+  40%,
+  60% {
+    transform: translate3d(4px, 0, 0);
+  }
+}
+
+.apply-shake {
+  animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
 </style>
