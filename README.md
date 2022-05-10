@@ -1,6 +1,6 @@
 # todo
 
-This app creates a to do list app
+This app creates a to do list app in vue
 
 
 ## Project Setup
