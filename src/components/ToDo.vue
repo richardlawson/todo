@@ -39,8 +39,13 @@
     <div>
       <div v-for="item in completedItems" :key="item.id" class="list-group-item flex">
         <div class="grow line-through">{{ item.task }}</div>
+        <div class="no-flex text-gray-700 hover:text-gray-800 mr-2">
+          <a @click.prevent="revertComplete(item)" :id="`revert-${item.id}`" href="#" aria-label="Add back to pending" title="Revert to pending">
+            <img class="mt-1" width="20" height="20" src="/images/undo.svg" alt="Revert to pending">
+          </a>
+        </div>
         <div class="no-flex text-gray-700 hover:text-gray-800">
-          <a @click.prevent="deleteComplete(item)" href="#" aria-label="Delete task" title="Delete item">
+          <a @click.prevent="deleteComplete(item)" :id="`delete-${item.id}`" href="#" aria-label="Delete task" title="Delete item">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
@@ -73,8 +78,13 @@ export default {
   },
   methods: {
     loadLists() {
-      this.items = JSON.parse(localStorage.getItem('pendingTasks'));
-      this.completedItems = JSON.parse(localStorage.getItem('completedTasks'));
+      if (localStorage.getItem('pendingTasks') !== null) {
+        this.items = JSON.parse(localStorage.getItem('pendingTasks'));
+      }
+
+      if (localStorage.getItem('completedTasks') !== null) {
+        this.completedItems = JSON.parse(localStorage.getItem('completedTasks'));
+      }
     },
     storeLists() {
       localStorage.setItem('pendingTasks', JSON.stringify(this.items));
@@ -92,7 +102,7 @@ export default {
       }
 
       this.items.unshift({
-        id: this.items.length,
+        id: this.getNextId(),
         task: this.newTask,
       })
       this.newTask = ''
@@ -101,13 +111,32 @@ export default {
     isValidTask(task) {
       return (task.trim() !== '')
     },
+    getNextId() {
+      if (this.items.length === 0 && this.completedItems.length === 0) {
+        return 1
+      }
+
+      const allItems = [...this.items, ...this.completedItems];
+
+      const ids = allItems.map(item => {
+        return item.id;
+      });
+
+      const max = Math.max(...ids);
+
+      return max + 1
+    },
     reorder() {
       this.dragging = false
       this.storeLists()
     },
     deleteComplete(item) {
-      this.dragging = false
       this.completedItems = this.completedItems.filter(({id}) => id !== item.id)
+      this.storeLists()
+    },
+    revertComplete(item) {
+      this.completedItems = this.completedItems.filter(({id}) => id !== item.id)
+      this.items.push(item)
       this.storeLists()
     },
     shakeAnimation() {
