@@ -1,6 +1,6 @@
 import {describe, it, expect} from 'vitest'
 
-import {mount} from '@vue/test-utils'
+import {mount, flushPromises} from '@vue/test-utils'
 import ToDo from '../ToDo.vue'
 import LocalStorageMock from './LocalStorageMock.js'
 
@@ -104,6 +104,45 @@ describe('ToDo', () => {
 
     expect(vm.items.length).toBe(1)
     expect(vm.completedItems.length).toBe(0)
+  })
+
+  it('loads saved lists', async () => {
+    window.localStorage.setItem(
+      'pendingTasks',
+      JSON.stringify([{
+          id: 1,
+          task: 'Pending task'
+        }]
+      )
+    )
+
+    window.localStorage.setItem(
+      'completedTasks',
+      JSON.stringify([{
+          id: 1,
+          task: 'Completed task'
+        }]
+      )
+    )
+
+    const wrapper = mount(ToDo, {})
+    await flushPromises()
+
+    expect(wrapper.text()).contains('Pending task')
+    expect(wrapper.text()).contains('Completed task')
+  })
+
+  it('saves a new item to storage', async () => {
+    const wrapper = mount(ToDo, {})
+    await flushPromises()
+
+    expect(window.localStorage.getItem('pendingTasks')).toBe(null)
+
+    const taskInput = wrapper.find('#task')
+    await taskInput.setValue('Test task')
+    await wrapper.get('form').trigger('submit')
+
+    expect(JSON.parse(window.localStorage.getItem('pendingTasks')).length).toBe(1)
   })
 })
 
