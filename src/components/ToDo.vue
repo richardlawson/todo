@@ -118,8 +118,8 @@ export default {
 
       const allItems = [...this.items, ...this.completedItems];
 
-      const ids = allItems.map(item => {
-        return item.id;
+      const ids = allItems.map(({id}) => {
+        return id;
       });
 
       const max = Math.max(...ids);
