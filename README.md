@@ -2,7 +2,7 @@
 
 This app creates a to do list app in vue
 
-You can see a demo at flipshark.co.uk 
+You can see a demo at flipshark.co.uk
 
 
 ## Project Setup
