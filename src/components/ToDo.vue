@@ -1,7 +1,7 @@
 <template>
   <form @submit.prevent="addNewTask" class="flex mb-6" :class="{ 'apply-shake': shake }">
     <label for="task" class="sr-only">Add Task</label>
-    <input v-model="newTask" name="task" id="task" placeholder="Enter a new task ..." class="grow text-2xl border-indigo-100 appearance-none border rounded-l py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-indigo-300">
+    <input v-model="newTask" name="task" id="task" placeholder="Enter a new task ..." class="grow sm:text-2xl border-indigo-100 appearance-none border rounded-l py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-indigo-300">
     <input type="submit" value="Add" class="flex-none bg-gray-600 text-white font-bold py-2 px-4 rounded-r hover:bg-gray-800">
   </form>
   <h2 class="mb-4">Pending</h2>
